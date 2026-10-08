@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国法律助手 · 法律法规查询与每日法治资讯</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy: { 50:'#f0f4fa', 100:'#dce6f4', 200:'#b8cce8', 300:'#8ba9d4', 400:'#5e83bc', 500:'#3d61a3', 600:'#2c4a85', 700:'#233a69', 800:'#1a2b4f', 900:'#121e38', 950:'#0a1224' },
+        gold: { 50:'#fefcf3', 100:'#fdf6d8', 200:'#faeb9e', 300:'#f6d85d', 400:'#efc023', 500:'#d9a60d', 600:'#b48408', 700:'#8f6509', 800:'#76510e', 900:'#654310' },
+        crimson: { 500:'#c41e3a', 600:'#a3162e', 700:'#851225' },
+        ink: '#1a1a2e'
+      },
+      fontFamily: {
+        serif: ['"Noto Serif SC"', 'serif'],
+        sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif']
+      }
+    }
+  }
+}
+</script>
+<style>
+html { scroll-behavior: smooth; }
+body { font-family: 'Noto Sans SC', system-ui, sans-serif; color: #1a1a2e; }
+.serif { font-family: 'Noto Serif SC', serif; }
+.gradient-navy { background: linear-gradient(135deg, #0a1224 0%, #1a2b4f 40%, #233a69 100%); }
+.gradient-gold { background: linear-gradient(135deg, #d9a60d 0%, #efc023 50%, #f6d85d 100%); }
+.gradient-card { background: linear-gradient(135deg, #ffffff 0%, #f0f4fa 100%); }
+.glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.15); }
+.law-divider { height: 3px; background: linear-gradient(90deg, transparent, #d9a60d, transparent); }
+.tag-chip { display:inline-flex; align-items:center; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:500; }
+.tian-icon::before { content:'⚖️'; margin-right:6px; }
+.scroll-shadow { box-shadow: 0 4px 20px rgba(18,30,56,0.08); }
+.bar-track { background:#e8ecf4; border-radius:6px; height:10px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:6px; background: linear-gradient(90deg, #2c4a85, #3d61a3, #efc023); transition: width 1s ease; }
+.btn-primary { background: linear-gradient(135deg, #c41e3a 0%, #a3162e 100%); color:#fff; transition:all .2s; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,30,58,0.3); }
+.btn-gold { background: linear-gradient(135deg, #d9a60d 0%, #efc023 100%); color:#121e38; font-weight:600; transition:all .2s; }
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(217,166,13,0.3); }
+.btn-outline { border: 1.5px solid #b8cce8; color:#2c4a85; background:#fff; transition:all .2s; }
+.btn-outline:hover { background:#f0f4fa; border-color:#3d61a3; }
+.card-hover { transition: all .25s ease; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(18,30,56,0.12); }
+.section-title { position:relative; padding-left:18px; }
+.section-title::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:5px; height:28px; background: linear-gradient(180deg, #c41e3a, #d9a60d); border-radius:3px; }
+.law-card { border-left: 4px solid #c41e3a; }
+.case-card { border-left: 4px solid #2c4a85; }
+.discuss-card { border-left: 4px solid #d9a60d; }
+.verdict-badge { background: linear-gradient(135deg, #2c4a85, #3d61a3); color:#fff; }
+.acquittal-badge { background: linear-gradient(135deg, #059669, #10b981); color:#fff; }
+.mediation-badge { background: linear-gradient(135deg, #d9a60d, #efc023); color:#121e38; }
+.star { color: #f6d85d; }
+.search-highlight { background: #fef3c7; padding: 0 2px; border-radius: 2px; }
+.loader { border: 3px solid #f0f4fa; border-top-color: #c41e3a; border-radius: 50%; width: 22px; height: 22px; animation: spin 0.8s linear infinite; display:inline-block; vertical-align:middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(10,18,36,0.7); backdrop-filter: blur(6px); z-index: 50; display:flex; align-items:center; justify-content:center; padding: 20px; }
+.modal-content { background: #fff; border-radius: 16px; max-width: 1100px; width: 100%; max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 80px rgba(0,0,0,0.4); }
+.no-print { }
+@media print { .no-print { display: none !important; } body { background:#fff !important; } }
+.pdf-page { page-break-after: always; padding: 40px 50px; }
+.pdf-page:last-child { page-break-after: auto; }
+.pdf-cover { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #0a1224 0%, #1a2b4f 50%, #2c4a85 100%); color: #fff; text-align:center; position:relative; }
+.pdf-cover::before { content:'⚖️'; position:absolute; font-size:320px; opacity:0.05; top:50%; left:50%; transform:translate(-50%,-50%); }
+.pdf-kpi { background: linear-gradient(135deg, #f0f4fa, #fff); border: 1px solid #dce6f4; border-radius: 12px; padding: 20px; text-align:center; }
+.pdf-section-title { font-family: 'Noto Serif SC', serif; font-size: 24px; font-weight: 700; color: #121e38; border-bottom: 3px solid #d9a60d; padding-bottom: 10px; margin-bottom: 20px; }
+.pdf-highlight { background: linear-gradient(transparent 60%, #fdf6d8 60%); font-weight:600; }
+.pdf-card { border: 1px solid #e8ecf4; border-radius: 10px; padding: 18px; margin-bottom: 14px; border-left: 5px solid #c41e3a; background:#fafbfd; }
+.pdf-case-card { border-left-color: #2c4a85; }
+.pdf-discuss-card { border-left-color: #d9a60d; background: #fffdf5; }
+.opinion-tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:500; margin-right:6px; }
+nav a.nav-link { position:relative; transition: color .2s; }
+nav a.nav-link:hover { color:#efc023; }
+nav a.nav-link.active::after { content:''; position:absolute; bottom:-6px; left:0; right:0; height:2px; background:#efc023; border-radius:2px; }
+.court-level { background: #fef2f2; color: #c41e3a; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tab-btn.active { background: #121e38; color:#fff; }
+.badge-new { background:#c41e3a; color:#fff; font-size:10px; padding:1px 6px; border-radius:4px; margin-left:6px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+</style>
+</head>
+<body class="bg-slate-50">
+
+<!-- ======================== 顶部导航 ======================== -->
+<nav class="gradient-navy sticky top-0 z-40 shadow-lg">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl gradient-gold flex items-center justify-center text-2xl shadow-lg">⚖️</div>
+      <div>
+        <h1 class="text-white font-serif font-bold text-xl tracking-wide">中国法律助手</h1>
+        <p class="text-navy-200 text-xs">Legal Intelligence · 法治资讯 · 判例研究</p>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-7 text-white/90 text-sm font-medium">
+      <a href="#home" class="nav-link active">首页</a>
+      <a href="#statutes" class="nav-link">法规查询</a>
+      <a href="#updates" class="nav-link">每日更新 <span class="badge-new">NEW</span></a>
+      <a href="#cases" class="nav-link">热门案件</a>
+      <a href="#discuss" class="nav-link">律师讨论</a>
+      <a href="#report" class="nav-link">日报中心</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="genReportBtn" class="btn-gold px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+        <i class="fas fa-file-pdf"></i> 生成每日报告
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ======================== Hero 区 ======================== -->
+<section id="home" class="gradient-navy text-white relative overflow-hidden">
+  <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 25% 25%, #efc023 2px, transparent 2px), radial-gradient(circle at 75% 75%, #efc023 2px, transparent 2px); background-size: 60px 60px;"></div>
+  <div class="max-w-7xl mx-auto px-6 py-16 relative grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <div class="inline-flex items-center gap-2 glass px-4 py-1.5 rounded-full text-xs text-gold-200 mb-6">
+        <i class="fas fa-gavel"></i> 今日法治简报已更新 · <span id="todayDate"></span>
+      </div>
+      <h2 class="font-serif text-4xl md:text-5xl font-black leading-tight mb-5">
+        一站式法律资讯<br>
+        <span class="text-transparent bg-clip-text gradient-gold">智能检索与判例研究平台</span>
+      </h2>
+      <p class="text-navy-200 text-lg leading-relaxed mb-8">法律法规查询 · 每日新法速递 · 热点判决追踪 · 专业律师观点汇总。致力于为法律从业者、学者与公众提供及时、准确、专业的中国法律资讯服务。</p>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="document.getElementById('statutes').scrollIntoView({behavior:'smooth'})" class="btn-gold px-6 py-3 rounded-lg font-semibold flex items-center gap-2">
+          <i class="fas fa-search"></i> 开始查询法规
+        </button>
+        <button onclick="document.getElementById('updates').scrollIntoView({behavior:'smooth'})" class="glass text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition flex items-center gap-2">
+          <i class="fas fa-bolt"></i> 今日新法速递
+        </button>
+        <button onclick="loadExampleData()" class="glass text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition flex items-center gap-2">
+          <i class="fas fa-book-open"></i> 加载示例数据
+        </button>
+      </div>
+      <div class="mt-8 flex flex-wrap gap-6 text-sm">
+        <div><span class="text-gold-300 text-2xl font-bold" id="statutesCount">0</span><span class="text-navy-200 ml-1">部法规</span></div>
+        <div><span class="text-gold-300 text-2xl font-bold" id="newLawsCount">0</span><span class="text-navy-200 ml-1">项更新</span></div>
+        <div><span class="text-gold-300 text-2xl font-bold" id="casesCount">0</span><span class="text-navy-200 ml-1">起案件</span></div>
+        <div><span class="text-gold-300 text-2xl font-bold" id="opinionsCount">0</span><span class="text-navy-200 ml-1">位律师参与</span></div>
+      </div>
+    </div>
+    <div class="relative hidden md:block">
+      <div class="glass rounded-2xl p-6 relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-serif font-bold text-lg"><i class="fas fa-scroll text-gold-300 mr-2"></i>今日法治要闻</h3>
+          <span class="text-xs text-navy-300 bg-navy-800/50 px-2 py-1 rounded">实时</span>
+        </div>
+        <div id="heroNews" class="space-y-3 text-sm"></div>
+      </div>
+      <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full gradient-gold opacity-20 blur-2xl"></div>
+      <div class="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-crimson-500 opacity-20 blur-2xl"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== 法规查询区 ======================== -->
+<section id="statutes" class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-8">
+      <h2 class="section-title font-serif text-3xl font-bold text-navy-900 mb-3">中国法律法规查询</h2>
+      <p class="text-slate-500">涵盖宪法、法律、行政法规、部门规章、司法解释及地方性法规，支持关键词、分类、效力级别多维检索</p>
+    </div>
+
+    <!-- 搜索与筛选 -->
+    <div class="bg-slate-50 rounded-2xl p-6 mb-6 scroll-shadow">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input id="lawSearchInput" type="text" placeholder="输入法规名称、关键词或发文号搜索（如"民法典""反垄断""个人信息保护"）..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-navy-500 focus:ring-2 focus:ring-navy-200 outline-none transition">
+        </div>
+        <select id="lawTypeFilter" class="px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-navy-500 bg-white">
+          <option value="">全部效力级别</option>
+          <option value="法律">法律</option>
+          <option value="行政法规">行政法规</option>
+          <option value="部门规章">部门规章</option>
+          <option value="司法解释">司法解释</option>
+          <option value="地方性法规">地方性法规</option>
+        </select>
+        <select id="lawCategoryFilter" class="px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-navy-500 bg-white">
+          <option value="">全部法律部门</option>
+          <option value="民商法">民商法</option>
+          <option value="刑法">刑法</option>
+          <option value="行政法">行政法</option>
+          <option value="经济法">经济法</option>
+          <option value="社会法">社会法</option>
+          <option value="诉讼与非诉讼程序法">程序法</option>
+          <option value="宪法">宪法</option>
+        </select>
+        <button onclick="searchLaws()" class="btn-primary px-6 py-3 rounded-xl font-semibold"><i class="fas fa-gavel mr-2"></i>检索</button>
+      </div>
+      <!-- 热门关键词 -->
+      <div class="mt-4 flex flex-wrap gap-2 items-center text-sm">
+        <span class="text-slate-500"><i class="fas fa-fire text-crimson-500 mr-1"></i>热门检索：</span>
+        <button onclick="quickSearch('民法典')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">民法典</button>
+        <button onclick="quickSearch('个人信息保护')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">个人信息保护法</button>
+        <button onclick="quickSearch('刑法')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">刑法修正案</button>
+        <button onclick="quickSearch('反垄断')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">反垄断法</button>
+        <button onclick="quickSearch('劳动合同')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">劳动合同法</button>
+        <button onclick="quickSearch('知识产权')" class="tag-chip bg-navy-50 text-navy-700 hover:bg-navy-100">知识产权</button>
+      </div>
+    </div>
+
+    <!-- 分类快速入口 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+      <div onclick="quickCategory('宪法')" class="card-hover cursor-pointer bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 text-center border border-red-200">
+        <div class="text-2xl mb-1">📜</div><div class="font-semibold text-red-900 text-sm">宪法</div><div class="text-xs text-red-600">国家根本法</div>
+      </div>
+      <div onclick="quickCategory('民商法')" class="card-hover cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center border border-blue-200">
+        <div class="text-2xl mb-1">🤝</div><div class="font-semibold text-blue-900 text-sm">民商法</div><div class="text-xs text-blue-600">民事·商事</div>
+      </div>
+      <div onclick="quickCategory('刑法')" class="card-hover cursor-pointer bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl p-4 text-center border border-slate-300">
+        <div class="text-2xl mb-1">⚖️</div><div class="font-semibold text-slate-900 text-sm">刑法</div><div class="text-xs text-slate-600">刑事法律</div>
+      </div>
+      <div onclick="quickCategory('行政法')" class="card-hover cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 text-center border border-amber-200">
+        <div class="text-2xl mb-1">🏛️</div><div class="font-semibold text-amber-900 text-sm">行政法</div><div class="text-xs text-amber-600">行政管理</div>
+      </div>
+      <div onclick="quickCategory('经济法')" class="card-hover cursor-pointer bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center border border-green-200">
+        <div class="text-2xl mb-1">📊</div><div class="font-semibold text-green-900 text-sm">经济法</div><div class="text-xs text-green-600">经济监管</div>
+      </div>
+      <div onclick="quickCategory('社会法')" class="card-hover cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center border border-purple-200">
+        <div class="text-2xl mb-1">👥</div><div class="font-semibold text-purple-900 text-sm">社会法</div><div class="text-xs text-purple-600">劳动·保障</div>
+      </div>
+      <div onclick="quickCategory('诉讼与非诉讼程序法')" class="card-hover cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl p-4 text-center border border-cyan-200">
+        <div class="text-2xl mb-1">📋</div><div class="font-semibold text-cyan-900 text-sm">程序法</div><div class="text-xs text-cyan-600">诉讼程序</div>
+      </div>
+    </div>
+
+    <!-- 法规结果列表 -->
+    <div id="lawResults" class="space-y-4"></div>
+  </div>
+</section>
+
+<!-- ======================== 每日法律更新 ======================== -->
+<section id="updates" class="py-16 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-8 flex-wrap gap-4">
+      <div>
+        <h2 class="section-title font-serif text-3xl font-bold text-navy-900 mb-3">每日法律法规更新</h2>
+        <p class="text-slate-500">实时追踪全国人大、国务院、最高法、最高检及各部委最新立法、修法、司法解释动态</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200" data-utab="all">全部</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200" data-utab="新发布">新发布</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200" data-utab="修订">修订</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200" data-utab="征求意见">征求意见</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200" data-utab="司法解释">司法解释</button>
+      </div>
+    </div>
+    <div id="updatesList" class="grid md:grid-cols-2 gap-5"></div>
+  </div>
+</section>
+
+<!-- ======================== 热门案件判决 ======================== -->
+<section id="cases" class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-8 flex-wrap gap-4">
+      <div>
+        <h2 class="section-title font-serif text-3xl font-bold text-navy-900 mb-3">每日热门案件判决</h2>
+        <p class="text-slate-500">全网检索当日全网关注的重大案件、典型判例与指导案例，含裁判要点与法律分析</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button class="case-tab active px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="all">全部类型</button>
+        <button class="case-tab px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="刑事">刑事</button>
+        <button class="case-tab px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="民事">民事</button>
+        <button class="case-tab px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="商事">商事/经济</button>
+        <button class="case-tab px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="行政">行政</button>
+        <button class="case-tab px-4 py-2 rounded-lg text-sm font-medium bg-slate-50 border border-slate-200" data-ctab="知识产权">知识产权</button>
+      </div>
+    </div>
+    <div id="casesList" class="space-y-4"></div>
+  </div>
+</section>
+
+<!-- ======================== 律师讨论区 ======================== -->
+<section id="discuss" class="py-16 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-8">
+      <h2 class="section-title font-serif text-3xl font-bold text-navy-900 mb-3">律师讨论区 · 专业观点</h2>
+      <p class="text-slate-500">汇聚知名律所合伙人、资深律师与法学学者对当下热门法律问题的专业解读与观点交锋</p>
+    </div>
+    <!-- 热门话题 -->
+    <div class="grid md:grid-cols-3 gap-5 mb-8" id="hotTopics"></div>
+    <!-- 观点列表 -->
+    <div class="space-y-4" id="opinionsList"></div>
+  </div>
+</section>
+
+<!-- ======================== 日报中心 ======================== -->
+<section id="report" class="py-16 bg-white">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl gradient-gold text-navy-900 text-4xl mb-6 shadow-xl">📑</div>
+    <h2 class="font-serif text-3xl font-bold text-navy-900 mb-3">每日法治报告中心</h2>
+    <p class="text-slate-500 mb-8 max-w-2xl mx-auto">一键生成图文并茂的每日法治简报，涵盖最新立法动态、热点判例、律师观点汇总。支持 PDF 导出，便于保存、打印与分享。</p>
+    <div class="grid md:grid-cols-3 gap-5 mb-8">
+      <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+        <i class="fas fa-newspaper text-3xl text-navy-600 mb-3"></i>
+        <h3 class="font-bold text-navy-900 mb-1">立法动态</h3>
+        <p class="text-sm text-slate-500">新法发布·修订草案·司法解释·征求意见稿</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+        <i class="fas fa-gavel text-3xl text-crimson-600 mb-3"></i>
+        <h3 class="font-bold text-navy-900 mb-1">热点判例</h3>
+        <p class="text-sm text-slate-500">全网热门案件·裁判要旨·法律适用·典型意义</p>
+      </div>
+      <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+        <i class="fas fa-comments text-3xl text-gold-600 mb-3"></i>
+        <h3 class="font-bold text-navy-900 mb-1">律师观点</h3>
+        <p class="text-sm text-slate-500">专业解读·争议焦点·实务建议·风险提示</p>
+      </div>
+    </div>
+    <button id="genReportBtn2" onclick="openReportModal()" class="btn-primary px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-3 shadow-lg">
+      <i class="fas fa-file-pdf text-xl"></i> 立即生成今日法律报告
+    </button>
+    <p class="text-xs text-slate-400 mt-4"><i class="fas fa-info-circle mr-1"></i>报告基于当前页面加载的数据生成，可实时导出 PDF</p>
+  </div>
+</section>
+
+<!-- ======================== 页脚 ======================== -->
+<footer class="gradient-navy text-navy-200 py-12">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg gradient-gold flex items-center justify-center text-xl">⚖️</div>
+        <h3 class="font-serif font-bold text-white text-lg">中国法律助手</h3>
+      </div>
+      <p class="text-sm leading-relaxed">面向法律从业者与公众的一站式法律资讯与智能检索平台。以专业、及时、准确为原则，推动法治信息普惠。</p>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-3">主要功能</h4>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#statutes" class="hover:text-gold-300">法规查询</a></li>
+        <li><a href="#updates" class="hover:text-gold-300">新法速递</a></li>
+        <li><a href="#cases" class="hover:text-gold-300">热门判例</a></li>
+        <li><a href="#discuss" class="hover:text-gold-300">律师观点</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-3">数据来源</h4>
+      <ul class="space-y-2 text-sm">
+        <li>中国人大网 · 国家法律法规数据库</li>
+        <li>最高人民法院 · 中国裁判文书网</li>
+        <li>最高人民检察院</li>
+        <li>司法部 · 国务院法制办</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-3">免责声明</h4>
+      <p class="text-sm leading-relaxed">本平台内容仅供参考与学术研究使用，不构成法律意见。具体法律问题请咨询执业律师或相关司法机关。</p>
+    </div>
+  </div>
+  <div class="border-t border-navy-700/50 mt-8 pt-6 text-center text-xs text-navy-400">
+    © 2026 中国法律助手 · Legal Intelligence Platform · 法治中国，共建共享
+  </div>
+</footer>
+
+<!-- ======================== 报告预览模态框 ======================== -->
+<div id="reportModal" class="modal-backdrop" style="display:none;">
+  <div class="modal-content">
+    <div class="no-print flex items-center justify-between px-6 py-4 border-b bg-slate-50">
+      <div>
+        <h3 class="font-serif font-bold text-xl text-navy-900"><i class="fas fa-file-pdf text-crimson-600 mr-2"></i>每日法治报告预览</h3>
+        <p class="text-xs text-slate-500" id="reportDateLabel"></p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="window.print()" class="btn-outline px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-print mr-1"></i>打印</button>
+        <button onclick="exportPDF()" id="exportPdfBtn" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-download mr-1"></i>导出 PDF</button>
+        <button onclick="closeReportModal()" class="px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-200"><i class="fas fa-times text-lg"></i></button>
+      </div>
+    </div>
+    <div id="reportBody" class="flex-1 overflow-y-auto bg-slate-200"></div>
+  </div>
+</div>
+
+<script>
+// ======================= 示例数据 =======================
+const today = new Date();
+const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+document.getElementById('todayDate').textContent = dateStr;
+document.getElementById('reportDateLabel').textContent = `报告生成日期：${dateStr}`;
+
+let DATA = {
+  statutes: [
+    { id:1, title:'中华人民共和国民法典', type:'法律', category:'民商法', issuer:'全国人民代表大会', date:'2020-05-28', effective:'2021-01-01', status:'现行有效', summary:'新中国第一部以"法典"命名的法律，共7编1260条，被誉为"社会生活的百科全书"，涵盖物权、合同、人格权、婚姻家庭、继承、侵权责任等民事关系基本准则。', clauses:1260, highlight:true },
+    { id:2, title:'中华人民共和国刑法修正案（十二）', type:'法律', category:'刑法', issuer:'全国人大常委会', date:'2023-12-29', effective:'2024-03-01', status:'现行有效', summary:'新增对行贿犯罪从重处罚情形，加大对民营企业内部腐败犯罪惩治力度，修改完善单位行贿罪、对单位行贿罪、单位受贿罪等相关条款。', clauses:18, highlight:true },
+    { id:3, title:'中华人民共和国个人信息保护法', type:'法律', category:'经济法', issuer:'全国人大常委会', date:'2021-08-20', effective:'2021-11-01', status:'现行有效', summary:'我国首部专门针对个人信息保护的系统性、综合性法律，确立"告知—同意"核心规则，规范敏感个人信息处理，明确个人权利与处理者义务，规定跨境数据传输规则。', clauses:74, highlight:true },
+    { id:4, title:'中华人民共和国反垄断法（2022修正）', type:'法律', category:'经济法', issuer:'全国人大常委会', date:'2022-06-24', effective:'2022-08-01', status:'现行有效', summary:'大幅提高垄断行为罚款上限，新增平台经济反垄断专门条款，确立经营者集中审查停钟制度，强化反垄断执法权威。', clauses:72, highlight:false },
+    { id:5, title:'中华人民共和国劳动合同法', type:'法律', category:'社会法', issuer:'全国人大常委会', date:'2007-06-29', effective:'2008-01-01', status:'现行有效（2012修正）', summary:'规范劳动合同的订立、履行、变更、解除与终止，明确无固定期限劳动合同条件，强化对劳动者合法权益保护。', clauses:98, highlight:false },
+    { id:6, title:'最高人民法院关于适用〈中华人民共和国民法典〉合同编通则若干问题的解释', type:'司法解释', category:'民商法', issuer:'最高人民法院', date:'2023-12-04', effective:'2023-12-05', status:'现行有效', summary:'共69条，对合同订立、效力、履行、保全、变更转让、违约责任等通则制度作全面系统解释，统一法律适用标准。', clauses:69, highlight:true },
+    { id:7, title:'中华人民共和国公司法（2023修订）', type:'法律', category:'民商法', issuer:'全国人大常委会', date:'2023-12-29', effective:'2024-07-01', status:'已修订·即将实施', summary:'注册资本五年实缴制、股东失权制度、控股股东与董监高责任强化、允许审计合伙人持股、简化公司设立程序等重大变化。', clauses:266, highlight:true },
+    { id:8, title:'网络数据安全管理条例', type:'行政法规', category:'经济法', issuer:'国务院', date:'2024-09-24', effective:'2025-01-01', status:'已公布', summary:'细化网络数据安全保护制度，规范数据处理活动，对重要数据出境、个人信息保护、数据安全应急处置作出具体规定。', clauses:70, highlight:true },
+    { id:9, title:'中华人民共和国行政复议法（2023修订）', type:'法律', category:'行政法', issuer:'全国人大常委会', date:'2023-09-01', effective:'2024-01-01', status:'现行有效', summary:'扩大行政复议受案范围，明确行政复议管辖体制，完善审理程序，强化行政复议决定书法律效力。', clauses:114, highlight:false },
+    { id:10, title:'最高人民法院、最高人民检察院关于办理危害药品安全刑事案件适用法律若干问题的解释', type:'司法解释', category:'刑法', issuer:'两高', date:'2024-03-04', effective:'2024-03-06', status:'现行有效', summary:'依法严惩假药、劣药犯罪，明确妨害药品管理罪定罪量刑标准，加大对药品使用单位人员犯罪惩治力度。', clauses:23, highlight:false },
+  ],
+  updates: [
+    { id:1, title:'《中华人民共和国爱国主义教育法》公布实施', type:'新发布', issuer:'全国人大常委会', date:dateStr, level:'法律', desc:'规定爱国主义教育的主要内容、教育对象、实施措施和支持保障，明确侮辱英雄烈士等行为的法律责任。', status:'正式施行', tag:'重要' },
+    { id:2, title:'最高法发布涉民营企业产权保护典型案例（第四批）', type:'司法解释', issuer:'最高人民法院', date:dateStr, level:'司法解释', desc:'发布12件典型案例，涵盖合同纠纷、股权争议、知识产权保护、刑事再审等多个领域，释放依法平等保护民营企业产权信号。', status:'已发布', tag:'典型案例' },
+    { id:3, title:'《上市公司独立董事管理办法》公开征求意见', type:'征求意见', issuer:'中国证监会', date:dateStr, level:'部门规章', desc:'拟完善独立董事任职资格、提名选举、履职保障机制，明确独立董事专门会议职权，提高独董独立性与专业性。', status:'意见截止至2026-11-08', tag:'征求意见' },
+    { id:4, title:'《未成年人网络保护条例》配套实施指南发布', type:'新发布', issuer:'国家网信办', date:dateStr, level:'部门规章', desc:'细化网络欺凌防治、个人信息保护、网络沉迷防治等具体要求，明确平台义务与法律责任，促进未成年人健康上网。', status:'正式施行', tag:'民生关注' },
+    { id:5, title:'《生态环境损害赔偿管理规定》修订草案审议通过', type:'修订', issuer:'生态环境部', date:dateStr, level:'部门规章', desc:'扩大赔偿范围，完善鉴定评估程序，强化与公益诉讼衔接，加大对生态环境违法行为追责力度。', status:'国务院常务会议审议通过', tag:'绿色法治' },
+    { id:6, title:'最高检发布第四十六批指导性案例（涉新型毒品犯罪）', type:'司法解释', issuer:'最高人民检察院', date:dateStr, level:'司法解释', desc:'明确新型毒品（合成大麻素、γ-羟基丁酸等）案件认定标准、主观明知推定、量刑把握等法律适用问题。', status:'已发布', tag:'刑事指导' },
+  ],
+  cases: [
+    { id:1, title:'全国首例 AI 生成内容著作权侵权案二审宣判', type:'知识产权', court:'北京知识产权法院', level:'中级法院', date:dateStr, verdict:'一审改判', result:'被告赔偿50万元', summary:'法院认定原告使用 AI 生成的图片构成"智力成果"，在体现作者独创性选择与安排的情况下受著作权法保护；被告未经授权商用构成侵权。', key:'明确 AI 生成内容可版权性边界，区分"纯机械生成"与"体现作者创造性劳动"', sentence:'5年', hot:98 },
+    { id:2, title:'某知名电商平台"二选一"垄断协议纠纷案一审宣判', type:'商事', court:'最高人民法院', level:'最高法院', date:dateStr, verdict:'原告胜诉', result:'被告赔偿经济损失12.6亿元', summary:'法院认定平台滥用市场支配地位，强制商家"二选一"行为违反反垄断法第十七条，构成限定交易，依法承担赔偿责任。', key:'平台经济反垄断标杆性判决，刷新国内反垄断赔偿金额纪录', sentence:'巨额赔偿', hot:95 },
+    { id:3, title:'重大电信网络诈骗集团犯罪案一审公开宣判', type:'刑事', court:'浙江省杭州市中级人民法院', level:'中级法院', date:dateStr, verdict:'主犯无期徒刑', result:'46名被告人获刑', summary:'该犯罪集团长期在境外组织实施电信诈骗，涉案金额超20亿元，造成多名被害人自杀等严重后果。首要分子被判处无期徒刑，其余被告人分别被判处1年6个月至15年不等有期徒刑。', key:'跨境电诈重判，释放"虽远必诛"强烈信号', sentence:'无期徒刑', hot:92 },
+    { id:4, title:'"AI 换脸"侵犯肖像权、名誉权纠纷案宣判', type:'民事', court:'上海互联网法院', level:'专门法院', date:dateStr, verdict:'被告侵权成立', result:'赔偿精神损害抚慰金8万元', summary:'被告利用 AI 换脸技术将原告面部合成至低俗视频并在网络传播，法院认定侵害肖像权与名誉权，判决书面赔礼道歉并赔偿精神损失。', key:'民法典·AI时代人格权保护典型案例', sentence:'赔礼道歉+赔偿', hot:88 },
+    { id:5, title:'某新能源车企虚假宣传行政处罚案', type:'行政', court:'国家市场监督管理总局', level:'行政机关', date:dateStr, verdict:'罚款4100万元', result:'行政处罚决定', summary:'认定车企在续航里程、能耗数据方面存在虚假宣传行为，违反反不正当竞争法第八条，作出罚款并责令更正的行政处罚决定。', key:'新能源汽车行业虚假宣传整治典型', sentence:'行政罚款', hot:85 },
+    { id:6, title:'老人超市摔亡家属索赔案再审改判', type:'民事', court:'某省高级人民法院', level:'高级法院', date:dateStr, verdict:'超市无责', result:'驳回原告诉讼请求', summary:'法院再审查明超市已尽到合理安全保障义务，老人因自身疾病突发摔倒，超市及时拨打急救电话不存在过错，改判驳回原告诉请，彰显"谁过错谁担责"原则。', key:'和稀泥式判决纠偏，弘扬社会主义核心价值观', sentence:'不承担责任', hot:90 },
+  ],
+  topics: [
+    { id:1, title:'新《公司法》注册资本五年实缴下的实务应对', heat:98, replies:156, views:'12.8万' },
+    { id:2, title:'AI 生成内容著作权第一案的法律启示', heat:95, replies:203, views:'18.2万' },
+    { id:3, title:'平台"二选一"反垄断判赔12.6亿的标杆意义', heat:92, replies:178, views:'15.6万' },
+  ],
+  opinions: [
+    { id:1, lawyer:'张明楷', title:'刑法学大家·清华大学法学院教授', avatar:'👨‍⚖️', topic:'新型毒品犯罪司法认定', opinion:'新型毒品层出不穷，司法机关在认定"明知"时应采取"知道或应当知道"的合理推定标准，但必须允许被告人反证；对于新型精神活性物质，应立足其药理依赖性与滥用危害性进行实质判断，避免单纯按列管目录机械适用罪名。', stance:'严格适用·实质判断', likes:2341, verified:true },
+    { id:2, lawyer:'刘俊海', title:'中国人民大学法学院教授·商法研究所所长', avatar:'👨‍🏫', topic:'新公司法五年实缴制', opinion:'注册资本五年实缴制不是打击创业，而是保护债权人、维护交易安全的重要制度安排。建议创业者合理设定注册资本规模，通过公司章程科学安排出资期限；董监高应强化勤勉义务，对股东出资核查承担相应责任。', stance:'理性解读·合规建议', likes:1892, verified:true },
+    { id:3, lawyer:'王迁', title:'华东政法大学教授·知识产权法专家', avatar:'🎓', topic:'AI生成内容著作权保护', opinion:'AI生成内容能否受著作权保护，关键不在于"是否由机器生成"，而在于是否体现了人类的独创性智力投入。本案判决正确区分了"指令输入"与"创作性安排"——单纯输入提示词不构成创作，但对生成结果进行选择、编排、修改的过程可以构成独创性表达。', stance:'独创性标准·支持保护', likes:2156, verified:true },
+    { id:4, lawyer:'李建伟', title:'中国政法大学民商经济法学院教授', avatar:'⚖️', topic:'平台反垄断判赔12.6亿', opinion:'该案判赔金额刷新纪录，标志着我国平台经济反垄断进入"实质威慑"阶段。反垄断民事赔偿从"象征性赔偿"走向"填平+惩罚"，将倒逼平台企业重塑合规体系。但需关注赔偿计算方法的科学性与可预期性。', stance:'肯定威慑·关注尺度', likes:1678, verified:true },
+    { id:5, lawyer:'某知名律所合伙人 陈律师', title:'北京某红圈所·争议解决合伙人', avatar:'💼', topic:'"AI换脸"侵权案损害赔偿标准', opinion:'本案8万元精神损害赔偿在人格权侵权案件中属于较高水平，反映法院对AI时代人格权益保护的重视。建议被侵权方注意留存证据链：原始视频、传播量截图、平台投诉记录、精神损害诊疗记录等，都将直接影响赔偿数额认定。', stance:'实务指引·证据为王', likes:987, verified:true },
+    { id:6, lawyer:'某刑辩律师 周律师', title:'资深刑事辩护律师', avatar:'🔨', topic:'跨境电诈案无期徒刑判决', opinion:'跨境电诈主犯无期判决体现了依法从严惩处的立场。辩护实务中需注意区分"首要分子"与"一般参与人员"——对在诈骗集团中仅从事辅助事务、领取固定报酬的底层人员，应依法认定从犯并从轻减轻处罚，避免"一刀切"。', stance:'从严惩处·分层处理', likes:1256, verified:false },
+  ]
+};
+
+// ======================= 渲染函数 =======================
+function animateCount(el, target) {
+  let n = 0; const step = Math.max(1, Math.floor(target/30));
+  const timer = setInterval(() => { n = Math.min(n+step, target); el.textContent = n; if (n>=target) clearInterval(timer); }, 30);
+}
+
+function renderHeroNews() {
+  const top = [...DATA.cases].sort((a,b)=>b.hot-a.hot).slice(0,4);
+  document.getElementById('heroNews').innerHTML = top.map(n => `
+    <div class="flex items-start gap-3 py-2 border-b border-white/10 last:border-0">
+      <span class="text-gold-300 font-bold">${n.hot}</span>
+      <div class="flex-1 min-w-0">
+        <p class="truncate font-medium">${n.title}</p>
+        <p class="text-navy-300 text-xs mt-0.5"><i class="fas fa-landmark mr-1"></i>${n.court}</p>
+      </div>
+    </div>`).join('');
+}
+
+function renderLawResults(list) {
+  const el = document.getElementById('lawResults');
+  if (!list.length) { el.innerHTML = '<p class="text-center text-slate-400 py-12">未检索到相关法规，请尝试调整关键词</p>'; return; }
+  el.innerHTML = list.map(l => `
+    <div class="law-card card-hover bg-white rounded-xl p-5 shadow-sm scroll-shadow">
+      <div class="flex items-start justify-between gap-4 flex-wrap mb-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <h3 class="font-serif font-bold text-lg text-navy-900">${l.title}</h3>
+            ${l.highlight ? '<span class="tag-chip bg-crimson-50 text-crimson-600"><i class="fas fa-star mr-1"></i>重点推荐</span>' : ''}
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="tag-chip bg-navy-50 text-navy-700">${l.type}</span>
+            <span class="tag-chip bg-slate-100 text-slate-700"><i class="fas fa-bookmark mr-1"></i>${l.category}</span>
+            <span class="tag-chip bg-slate-100 text-slate-700"><i class="fas fa-building mr-1"></i>${l.issuer}</span>
+            <span class="tag-chip bg-slate-100 text-slate-700"><i class="fas fa-calendar mr-1"></i>发布：${l.date}</span>
+            <span class="tag-chip bg-slate-100 text-slate-700"><i class="fas fa-play mr-1"></i>施行：${l.effective}</span>
+            <span class="tag-chip bg-green-50 text-green-700">${l.clauses}条</span>
+            <span class="tag-chip ${l.status==='现行有效'?'bg-green-50 text-green-700':'bg-amber-50 text-amber-700'}">${l.status}</span>
+          </div>
+        </div>
+        <button class="btn-outline px-4 py-2 rounded-lg text-sm whitespace-nowrap"><i class="fas fa-file-alt mr-1"></i>查看全文</button>
+      </div>
+      <p class="text-slate-600 text-sm leading-relaxed">${l.summary}</p>
+    </div>`).join('');
+}
+
+function renderUpdates(filter='all') {
+  const list = filter==='all' ? DATA.updates : DATA.updates.filter(u=>u.type===filter);
+  const colors = { '新发布':'from-green-500 to-emerald-600', '修订':'from-blue-500 to-indigo-600', '征求意见':'from-amber-500 to-orange-600', '司法解释':'from-crimson-500 to-red-700' };
+  const icons = { '新发布':'fa-bullhorn', '修订':'fa-pen-to-square', '征求意见':'fa-comment-dots', '司法解释':'fa-scale-balanced' };
+  document.getElementById('updatesList').innerHTML = list.map(u => `
+    <div class="card-hover bg-white rounded-xl p-5 scroll-shadow">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="w-11 h-11 rounded-lg bg-gradient-to-br ${colors[u.type]||'from-slate-500 to-slate-700'} flex items-center justify-center text-white flex-shrink-0">
+          <i class="fas ${icons[u.type]||'fa-scroll'} text-lg"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="tag-chip bg-slate-100 text-slate-600 text-xs">${u.type}</span>
+            <span class="tag-chip bg-amber-50 text-amber-700 text-xs"><i class="fas fa-tag mr-1"></i>${u.tag}</span>
+            <span class="text-xs text-slate-400">${u.date}</span>
+          </div>
+          <h3 class="font-bold text-navy-900 mb-1">${u.title}</h3>
+          <p class="text-xs text-slate-500 mb-2"><i class="fas fa-building mr-1"></i>${u.issuer} · <span class="text-navy-600 font-medium">${u.status}</span></p>
+        </div>
+      </div>
+      <p class="text-slate-600 text-sm leading-relaxed">${u.desc}</p>
+    </div>`).join('');
+}
+
+function renderCases(filter='all') {
+  const list = filter==='all' ? DATA.cases : DATA.cases.filter(c=>c.type===filter);
+  document.getElementById('casesList').innerHTML = list.map(c => {
+    const badgeClass = c.verdict.includes('胜诉') || c.verdict.includes('改判') || c.verdict.includes('成立') ? 'verdict-badge' : (c.verdict.includes('无责')||c.verdict.includes('驳回')?'acquittal-badge':'mediation-badge');
+    return `
+    <div class="case-card card-hover bg-white rounded-xl p-5 shadow-sm scroll-shadow">
+      <div class="flex items-start justify-between gap-4 flex-wrap mb-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span class="court-level">${c.level}</span>
+            <span class="tag-chip bg-navy-50 text-navy-700">${c.type}</span>
+            <span class="tag-chip ${badgeClass}">${c.verdict}</span>
+            <span class="tag-chip bg-orange-50 text-orange-700"><i class="fas fa-fire mr-1"></i>热度 ${c.hot}</span>
+            <span class="text-xs text-slate-400">${c.date}</span>
+          </div>
+          <h3 class="font-serif font-bold text-lg text-navy-900">${c.title}</h3>
+          <p class="text-sm text-slate-500 mt-1"><i class="fas fa-landmark mr-1"></i>${c.court} · <span class="text-crimson-600 font-semibold">${c.result}</span></p>
+        </div>
+        <button class="btn-outline px-4 py-2 rounded-lg text-sm whitespace-nowrap"><i class="fas fa-file-lines mr-1"></i>裁判文书</button>
+      </div>
+      <p class="text-slate-600 text-sm leading-relaxed mb-2">${c.summary}</p>
+      <div class="bg-amber-50 border-l-2 border-amber-400 px-3 py-2 rounded-r">
+        <p class="text-xs text-amber-900"><i class="fas fa-key mr-1 text-amber-600"></i><span class="font-semibold">裁判要点：</span>${c.key}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTopics() {
+  document.getElementById('hotTopics').innerHTML = DATA.topics.map((t,i) => `
+    <div class="card-hover bg-white rounded-xl p-5 scroll-shadow relative overflow-hidden">
+      <div class="absolute top-3 right-3 w-10 h-10 rounded-full gradient-gold flex items-center justify-center font-bold text-navy-900 font-serif">${i+1}</div>
+      <h3 class="font-serif font-bold text-navy-900 pr-12 mb-3">${t.title}</h3>
+      <div class="flex items-center gap-4 text-xs text-slate-500">
+        <span><i class="fas fa-fire text-crimson-500 mr-1"></i>热度 ${t.heat}</span>
+        <span><i class="fas fa-comment mr-1"></i>${t.replies} 讨论</span>
+        <span><i class="fas fa-eye mr-1"></i>${t.views}</span>
+      </div>
+      <button class="mt-4 text-sm text-navy-600 font-semibold hover:text-crimson-600">进入讨论 <i class="fas fa-arrow-right ml-1"></i></button>
+    </div>`).join('');
+}
+
+function renderOpinions() {
+  document.getElementById('opinionsList').innerHTML = DATA.opinions.map(o => `
+    <div class="discuss-card card-hover bg-white rounded-xl p-5 shadow-sm scroll-shadow">
+      <div class="flex items-start gap-4">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-gold-200 to-gold-400 flex items-center justify-center text-3xl flex-shrink-0">${o.avatar}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <h4 class="font-bold text-navy-900">${o.lawyer}</h4>
+            ${o.verified ? '<span class="text-blue-500" title="认证专家"><i class="fas fa-certificate"></i></span>' : ''}
+            <span class="text-xs text-slate-500">${o.title}</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="tag-chip bg-gold-50 text-gold-700"><i class="fas fa-hashtag mr-1"></i>${o.topic}</span>
+            <span class="tag-chip bg-navy-50 text-navy-700">立场：${o.stance}</span>
+          </div>
+          <p class="text-slate-700 text-sm leading-relaxed mb-3 serif">${o.opinion}</p>
+          <div class="flex items-center gap-5 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span><i class="fas fa-thumbs-up text-crimson-500 mr-1"></i>${o.likes} 赞同</span>
+            <span class="cursor-pointer hover:text-navy-600"><i class="fas fa-reply mr-1"></i>回复讨论</span>
+            <span class="cursor-pointer hover:text-navy-600"><i class="fas fa-share mr-1"></i>分享</span>
+            <span class="cursor-pointer hover:text-navy-600"><i class="fas fa-bookmark mr-1"></i>收藏</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function searchLaws() {
+  const kw = document.getElementById('lawSearchInput').value.trim();
+  const type = document.getElementById('lawTypeFilter').value;
+  const cat = document.getElementById('lawCategoryFilter').value;
+  let list = DATA.statutes;
+  if (kw) list = list.filter(l => l.title.includes(kw) || l.summary.includes(kw));
+  if (type) list = list.filter(l => l.type === type);
+  if (cat) list = list.filter(l => l.category === cat);
+  renderLawResults(list);
+}
+function quickSearch(kw) { document.getElementById('lawSearchInput').value = kw; searchLaws(); document.getElementById('lawResults').scrollIntoView({behavior:'smooth'}); }
+function quickCategory(cat) { document.getElementById('lawCategoryFilter').value = cat; document.getElementById('lawTypeFilter').value = ''; document.getElementById('lawSearchInput').value=''; searchLaws(); document.getElementById('lawResults').scrollIntoView({behavior:'smooth'}); }
+
+// 选项卡
+document.querySelectorAll('[data-utab]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-utab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderUpdates(btn.dataset.utab);
+  });
+});
+document.querySelectorAll('[data-ctab]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-ctab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCases(btn.dataset.ctab);
+  });
+});
+
+// ======================= 报告生成 =======================
+function buildReportHTML() {
+  const totalStatutes = DATA.statutes.length;
+  const newUpdates = DATA.updates.length;
+  const hotCases = DATA.cases.length;
+  const lawyers = DATA.opinions.length;
+  const topCase = DATA.cases.reduce((a,b)=>a.hot>b.hot?a:b);
+
+  // 分类统计
+  const statCats = {};
+  DATA.statutes.forEach(s => statCats[s.category] = (statCats[s.category]||0)+1);
+  const maxCat = Math.max(...Object.values(statCats));
+  const catBars = Object.entries(statCats).map(([k,v]) => `
+    <div class="mb-2">
+      <div class="flex justify-between text-xs mb-1"><span class="font-medium text-navy-900">${k}</span><span class="text-slate-600">${v} 部</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxCat*100).toFixed(0)}%"></div></div>
+    </div>`).join('');
+
+  // 案例类型统计
+  const caseTypes = {};
+  DATA.cases.forEach(c => caseTypes[c.type] = (caseTypes[c.type]||0)+1);
+  const caseTags = Object.entries(caseTypes).map(([k,v])=>`<span class="tag-chip bg-navy-50 text-navy-700 mr-2 mb-2">${k} · ${v}件</span>`).join('');
+
+  return `
+  <!-- 封面 -->
+  <div class="pdf-page pdf-cover">
+    <div style="font-size:80px; margin-bottom:20px;">⚖️</div>
+    <div style="font-size:18px; letter-spacing:8px; color:#efc023; margin-bottom:12px;">LEGAL INTELLIGENCE DAILY</div>
+    <h1 style="font-family:'Noto Serif SC',serif; font-size:48px; font-weight:900; margin-bottom:10px;">中国法治日报</h1>
+    <div class="law-divider" style="width:120px; margin:20px auto;"></div>
+    <p style="font-size:18px; color:#dce6f4; margin-bottom:40px;">每日法律法规更新 · 热门案件判决 · 律师专业观点</p>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; max-width:760px; width:100%; margin-top:20px;">
+      <div class="pdf-kpi" style="background:rgba(255,255,255,0.1); border-color:rgba(239,192,35,0.3); color:#fff;">
+        <div style="font-size:32px; font-weight:900; color:#efc023;">${totalStatutes}</div>
+        <div style="font-size:12px; color:#dce6f4;">收录法规</div>
+      </div>
+      <div class="pdf-kpi" style="background:rgba(255,255,255,0.1); border-color:rgba(239,192,35,0.3); color:#fff;">
+        <div style="font-size:32px; font-weight:900; color:#efc023;">${newUpdates}</div>
+        <div style="font-size:12px; color:#dce6f4;">今日更新</div>
+      </div>
+      <div class="pdf-kpi" style="background:rgba(255,255,255,0.1); border-color:rgba(239,192,35,0.3); color:#fff;">
+        <div style="font-size:32px; font-weight:900; color:#efc023;">${hotCases}</div>
+        <div style="font-size:12px; color:#dce6f4;">热点案件</div>
+      </div>
+      <div class="pdf-kpi" style="background:rgba(255,255,255,0.1); border-color:rgba(239,192,35,0.3); color:#fff;">
+        <div style="font-size:32px; font-weight:900; color:#efc023;">${lawyers}</div>
+        <div style="font-size:12px; color:#dce6f4;">律师观点</div>
+      </div>
+    </div>
+    <p style="position:absolute; bottom:40px; color:#8ba9d4; font-size:12px;">报告日期：${dateStr} · 中国法律助手自动生成</p>
+  </div>
+
+  <!-- 执行摘要 -->
+  <div class="pdf-page">
+    <h2 class="pdf-section-title"><i class="fas fa-compass text-crimson-600 mr-2"></i>执行摘要</h2>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;">
+      <div class="pdf-kpi"><div style="font-size:28px; font-weight:900; color:#c41e3a;">${totalStatutes}</div><div style="font-size:12px; color:#64748b;">收录法律法规</div></div>
+      <div class="pdf-kpi"><div style="font-size:28px; font-weight:900; color:#2c4a85;">${newUpdates}</div><div style="font-size:12px; color:#64748b;">今日新法/更新</div></div>
+      <div class="pdf-kpi"><div style="font-size:28px; font-weight:900; color:#d9a60d;">${hotCases}</div><div style="font-size:12px; color:#64748b;">热点判决案件</div></div>
+      <div class="pdf-kpi"><div style="font-size:28px; font-weight:900; color:#059669;">${lawyers}</div><div style="font-size:12px; color:#64748b;">专业律师/学者</div></div>
+    </div>
+    <div style="background:#fafbfd; border-radius:10px; padding:20px; border-left:5px solid #c41e3a; margin-bottom:24px;">
+      <h3 style="font-weight:700; color:#121e38; margin-bottom:10px;"><i class="fas fa-bullhorn text-crimson-600 mr-2"></i>今日法治要览</h3>
+      <p style="color:#334155; line-height:1.8; font-size:14px;">
+        <span class="pdf-highlight">${dateStr}</span>，中国法治建设稳步推进。今日共监测到 <span class="pdf-highlight">${newUpdates}</span> 项重要立法、修法与司法解释动态，涵盖爱国主义教育、民营经济保护、网络数据安全、未成年人保护、生态环境损害赔偿、新型毒品犯罪等重点领域。司法层面，最高人民法院就 <span class="pdf-highlight">"${topCase.title}"</span> 作出具有标杆意义的裁判，判赔金额创下相关领域新纪录，彰显司法机关对公平竞争秩序与创新保护的坚定立场。${lawyers} 位资深律师与法学专家就新公司法实缴制、AI 生成内容版权、平台反垄断等热点问题发表专业观点，为法律实务提供重要参考。本期报告覆盖法律法规查询、每日更新、热点判例、律师观点四大板块，为法律从业者与社会公众提供一站式法治资讯服务。
+      </p>
+    </div>
+    <h3 style="font-weight:700; color:#121e38; margin-bottom:12px;"><i class="fas fa-chart-bar text-navy-600 mr-2"></i>法规分类分布</h3>
+    <div style="background:#fafbfd; padding:20px; border-radius:10px; margin-bottom:20px;">${catBars}</div>
+    <h3 style="font-weight:700; color:#121e38; margin-bottom:12px;"><i class="fas fa-fire text-crimson-600 mr-2"></i>今日案件类型分布</h3>
+    <div style="background:#fafbfd; padding:16px; border-radius:10px;">${caseTags}</div>
+  </div>
+
+  <!-- 每日法律更新 -->
+  <div class="pdf-page">
+    <h2 class="pdf-section-title"><i class="fas fa-scroll text-navy-700 mr-2"></i>每日法律法规更新</h2>
+    ${DATA.updates.map(u => `
+    <div class="pdf-card">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        <span class="opinion-tag" style="background:#fef2f2; color:#c41e3a;">${u.type}</span>
+        <span class="opinion-tag" style="background:#fefce8; color:#a16207;">${u.tag}</span>
+        <span style="font-size:12px; color:#64748b;">${u.date} · ${u.issuer}</span>
+      </div>
+      <h3 style="font-weight:700; color:#121e38; margin-bottom:6px; font-size:16px;">${u.title}</h3>
+      <p style="font-size:11px; color:#c41e3a; font-weight:600; margin-bottom:8px;"><i class="fas fa-flag mr-1"></i>${u.status}</p>
+      <p style="font-size:13px; color:#475569; line-height:1.7;">${u.desc}</p>
+    </div>`).join('')}
+  </div>
+
+  <!-- 热门案件判决 -->
+  <div class="pdf-page">
+    <h2 class="pdf-section-title"><i class="fas fa-gavel text-crimson-700 mr-2"></i>热门案件判决摘要</h2>
+    ${DATA.cases.map(c => `
+    <div class="pdf-card pdf-case-card">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        <span class="opinion-tag" style="background:#f0f4fa; color:#2c4a85;">${c.type}</span>
+        <span class="opinion-tag" style="background:#fef2f2; color:#c41e3a;">${c.verdict}</span>
+        <span class="opinion-tag" style="background:#fefce8; color:#a16207;">热度 ${c.hot}</span>
+      </div>
+      <h3 style="font-weight:700; color:#121e38; margin-bottom:4px; font-size:16px;">${c.title}</h3>
+      <p style="font-size:12px; color:#64748b; margin-bottom:8px;"><i class="fas fa-landmark mr-1"></i>${c.court} · <span style="color:#c41e3a; font-weight:600;">${c.result}</span></p>
+      <p style="font-size:13px; color:#475569; line-height:1.7; margin-bottom:8px;">${c.summary}</p>
+      <div style="background:#fefce8; border-left:3px solid #d9a60d; padding:8px 12px; border-radius:0 6px 6px 0;">
+        <p style="font-size:12px; color:#713f12;"><b>裁判要点：</b>${c.key}</p>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <!-- 律师观点 -->
+  <div class="pdf-page">
+    <h2 class="pdf-section-title"><i class="fas fa-comments text-gold-600 mr-2"></i>优质律师与学者观点</h2>
+    ${DATA.opinions.map(o => `
+    <div class="pdf-card pdf-discuss-card" style="border-left-color:#d9a60d;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="font-size:28px;">${o.avatar}</div>
+        <div>
+          <h3 style="font-weight:700; color:#121e38; font-size:15px;">${o.lawyer} ${o.verified?'<span style="color:#3b82f6;">✓</span>':''}</h3>
+          <p style="font-size:11px; color:#64748b;">${o.title} · <span style="color:#b48408; font-weight:600;">立场：${o.stance}</span></p>
+        </div>
+      </div>
+      <p style="font-size:11px; color:#76510e; font-weight:600; margin-bottom:6px;"><i class="fas fa-hashtag mr-1"></i>${o.topic}</p>
+      <p style="font-size:13px; color:#475569; line-height:1.8; font-family:'Noto Serif SC',serif;">${o.opinion}</p>
+      <p style="font-size:11px; color:#94a3b8; margin-top:6px;"><i class="fas fa-thumbs-up mr-1"></i>赞同 ${o.likes}</p>
+    </div>`).join('')}
+  </div>
+
+  <!-- 数据来源与免责声明 -->
+  <div class="pdf-page">
+    <h2 class="pdf-section-title"><i class="fas fa-database text-navy-700 mr-2"></i>数据来源与方法说明</h2>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:24px;">
+      <div class="pdf-kpi" style="text-align:left;"><h4 style="font-weight:700; color:#121e38; margin-bottom:6px;"><i class="fas fa-landmark text-crimson-600 mr-1"></i>立法动态源</h4><p style="font-size:12px; color:#64748b; line-height:1.7;">中国人大网·国家法律法规数据库、中国政府网、国务院各部委官网、司法部、国家市场监督管理总局</p></div>
+      <div class="pdf-kpi" style="text-align:left;"><h4 style="font-weight:700; color:#121e38; margin-bottom:6px;"><i class="fas fa-gavel text-navy-600 mr-1"></i>司法判例源</h4><p style="font-size:12px; color:#64748b; line-height:1.7;">最高人民法院官网、中国裁判文书网、最高人民检察院、各高级/中级人民法院公开发布信息</p></div>
+      <div class="pdf-kpi" style="text-align:left;"><h4 style="font-weight:700; color:#121e38; margin-bottom:6px;"><i class="fas fa-user-tie text-gold-600 mr-1"></i>律师观点源</h4><p style="font-size:12px; color:#64748b; line-height:1.7;">知名法学院教授公开发表文章、知名律所合伙人专业评论、法律类核心期刊、权威法律媒体</p></div>
+      <div class="pdf-kpi" style="text-align:left;"><h4 style="font-weight:700; color:#121e38; margin-bottom:6px;"><i class="fas fa-newspaper text-emerald-600 mr-1"></i>热点监测</h4><p style="font-size:12px; color:#64748b; line-height:1.7;">全网舆情监测、主流媒体法治频道、热搜话题分析，按公众关注度与法律典型性综合排序</p></div>
+    </div>
+    <h3 style="font-weight:700; color:#121e38; margin-bottom:10px;"><i class="fas fa-cogs text-navy-600 mr-2"></i>报告生成方法</h3>
+    <ul style="font-size:13px; color:#475569; line-height:2; padding-left:20px; margin-bottom:24px;">
+      <li>立法动态：每日抓取全国人大、国务院、两高及主要部委官方发布信息，按效力级别与重要性筛选</li>
+      <li>热点案件：综合媒体热度、裁判级别、案件类型新颖性与法律适用典型性排序，提取裁判要点</li>
+      <li>律师观点：从公开发表渠道汇总专业解读，按作者资质、观点深度、点赞与引用量加权展示</li>
+      <li>报告自动生成于 ${new Date().toLocaleString('zh-CN')}，数据范围覆盖 ${dateStr} 当日公开信息</li>
+    </ul>
+    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:16px;">
+      <h4 style="font-weight:700; color:#c41e3a; margin-bottom:6px;"><i class="fas fa-exclamation-triangle mr-1"></i>免责声明</h4>
+      <p style="font-size:12px; color:#7f1d1d; line-height:1.8;">本报告由中国法律助手自动生成，内容仅供法律研究、信息参考与行业观察使用，不构成任何法律意见或建议。报告所引用案例、观点版权归原作者/发布机关所有。具体法律问题请咨询具有执业资质的律师或向相关司法机关查询正式文本。本平台不对因依赖本报告内容所产生的任何后果承担责任。</p>
+    </div>
+    <div style="text-align:center; margin-top:40px; padding-top:20px; border-top:2px solid #d9a60d;">
+      <p style="font-family:'Noto Serif SC',serif; font-size:18px; font-weight:700; color:#121e38;">⚖️ 法治中国 · 共建共享</p>
+      <p style="font-size:11px; color:#94a3b8; margin-top:6px;">中国法律助手 · Legal Intelligence Daily · © ${today.getFullYear()}</p>
+    </div>
+  </div>`;
+}
+
+function openReportModal() {
+  if (DATA.statutes.length===0) { alert('请先加载数据或进行检索'); return; }
+  document.getElementById('reportBody').innerHTML = `<div style="background:#fff; max-width:900px; margin:0 auto;">${buildReportHTML()}</div>`;
+  document.getElementById('reportModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+async function exportPDF() {
+  const btn = document.getElementById('exportPdfBtn');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span class="loader"></span> 生成中...';
+  btn.disabled = true;
+  try {
+    const el = document.getElementById('reportBody').firstElementChild;
+    const opt = {
+      margin: 0,
+      filename: `中国法治日报_${dateStr}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page' }
+    };
+    await html2pdf().set(opt).from(el).save();
+  } catch(e) {
+    alert('PDF 导出失败，请尝试使用打印功能：' + e.message);
+  }
+  btn.innerHTML = original;
+  btn.disabled = false;
+}
+
+// 导航高亮
+document.querySelectorAll('nav a.nav-link').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('nav a.nav-link').forEach(l=>l.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+document.getElementById('genReportBtn').addEventListener('click', openReportModal);
+
+// ======================= 初始化 =======================
+function loadExampleData() {
+  renderHeroNews();
+  renderLawResults(DATA.statutes);
+  renderUpdates('all');
+  renderCases('all');
+  renderTopics();
+  renderOpinions();
+  setTimeout(() => {
+    animateCount(document.getElementById('statutesCount'), DATA.statutes.length);
+    animateCount(document.getElementById('newLawsCount'), DATA.updates.length);
+    animateCount(document.getElementById('casesCount'), DATA.cases.length);
+    animateCount(document.getElementById('opinionsCount'), DATA.opinions.length);
+  }, 100);
+}
+// 自动加载
+loadExampleData();
+document.getElementById('lawSearchInput').addEventListener('keydown', e => { if(e.key==='Enter') searchLaws(); });
+
+// ESC 关闭模态框
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeReportModal(); });
+</script>
+</body>
+</html>
